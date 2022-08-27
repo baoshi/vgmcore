@@ -1,7 +1,7 @@
 #include <stdlib.h>
 #include <memory.h>
-#include "vgm_conf.h"
 #include "nesapu.h"
+
 
 //
 // Length Counter (Pulse1, Pulse2, Triangle, Noise)
@@ -96,6 +96,9 @@ static const q29_t mixer_tnd_table[203] =
      396443264,  397528704,  398609248
 };
 
+
+
+#define NESAPU_FADE_STEPS       256
 static const q29_t fadeout_table[NESAPU_FADE_STEPS] =
 {
              0,    2105376,    4210752,    6316128,    8421505,   10526881,   12632257,   14737633, 
@@ -644,7 +647,7 @@ static inline unsigned int update_dmc(nesapu_t* apu, unsigned int cycles)
 
 
 
-nesapu_t * nesapu_create(file_reader_t *reader, bool format, unsigned int clock, unsigned int srate)
+nesapu_t * nesapu_create(file_reader_t *reader, bool format, unsigned int clock, unsigned int sample_rate)
 {
     nesapu_t *apu = (nesapu_t*)VGM_MALLOC(sizeof(nesapu_t));
     if (NULL == apu)
@@ -653,15 +656,14 @@ nesapu_t * nesapu_create(file_reader_t *reader, bool format, unsigned int clock,
     apu->reader = reader;
     apu->format = format;
     apu->clock_rate = clock;
-    apu->sample_rate = srate;
 #if NESAPU_USE_BLIPBUF
     // blip
-    apu->blip = blip_new(NESAPU_MAX_SAMPLE_SIZE);
-    blip_set_rates(apu->blip, apu->clock_rate, apu->sample_rate);
+    apu->blip = blip_new(NESAPU_MAX_SAMPLES);
+    blip_set_rates(apu->blip, apu->clock_rate, sample_rate);
     apu->frame_period_fp = float_to_q16((float)apu->clock_rate / 240.0f);  // 240Hz frame counter period
 #else
     // Sampling
-    apu->sample_period_fp = float_to_q16((float)apu->clock_rate / NESAPU_SAMPLE_RATE);
+    apu->sample_period_fp = float_to_q16((float)apu->clock_rate / sample_rate);
 #endif
     // ram
     apu->ram_list = NULL;

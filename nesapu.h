@@ -10,17 +10,26 @@
 # include "blip_buf.h"
 #endif
 #include "fixedpoint.h"
-#include "audio_file_reader.h"
+#include "file_reader.h"
+#include "vgm_conf.h"
 
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define NESAPU_SAMPLE_RATE      44100
-#define NESAPU_MAX_SAMPLE_SIZE  1500
-#define NESAPU_RAM_CACHE_SIZE   4096
-#define NESAPU_FADE_STEPS       256
+#ifndef NESAPU_SAMPLE_RATE
+# define NESAPU_SAMPLE_RATE      44100
+#endif
+
+#ifndef NESAPU_MAX_SAMPLES
+# define NESAPU_MAX_SAMPLES      1500
+#endif
+
+#ifndef NESAPU_RAM_CACHE_SIZE
+# define NESAPU_RAM_CACHE_SIZE   4096
+#endif
+
 
 typedef struct nesapu_ram_s nesapu_ram_t;
 struct nesapu_ram_s
@@ -40,7 +49,6 @@ typedef struct nesapu_s
     file_reader_t *reader;      // reader interface
     bool format;                // true: PAL, false: NTSC
     unsigned int clock_rate;    // NES clock rate (typ. 1789772)
-    unsigned int sample_rate;   // Sound sampling rate
 #if NESAPU_USE_BLIPBUF    
     // Blip
     blip_buffer_t *blip;
@@ -132,7 +140,7 @@ typedef struct nesapu_s
 } nesapu_t;
 
 
-nesapu_t * nesapu_create(file_reader_t *reader, bool format, unsigned int clock, unsigned int srate);
+nesapu_t * nesapu_create(file_reader_t *reader, bool format, unsigned int clock, unsigned int sample_rate);
 void    nesapu_destroy(nesapu_t *apu);
 void    nesapu_reset(nesapu_t *apu);
 void    nesapu_write_reg(nesapu_t *apu, uint16_t reg, uint8_t val);

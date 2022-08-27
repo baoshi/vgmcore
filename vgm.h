@@ -2,7 +2,7 @@
 
 #include <stdint.h>
 #include <stdbool.h>
-#include "audio_file_reader.h"
+#include "file_reader.h"
 #include "nesapu.h"
 
 
@@ -112,7 +112,6 @@ typedef struct vgm_s
 	char *creator;          // VGM creator name
 	char *notes;            // notes
     // Playback control
-    unsigned int sample_rate;       // sample rate
     size_t data_pos;                // position of current data
     unsigned int samples_waiting;   // # of samples waiting, in 44100Hz unit
     nesapu_t *apu;                  // NES APU
@@ -124,7 +123,7 @@ typedef struct vgm_s
 
 vgm_t* vgm_create(file_reader_t *reader);
 void vgm_destroy(vgm_t *vgm);
-bool vgm_prepare_playback(vgm_t *vgm, unsigned int srate, bool fadeout);
+bool vgm_prepare_playback(vgm_t *vgm, unsigned int sample_rate, bool fadeout);
 int vgm_get_samples(vgm_t *vgm, int16_t *buf, unsigned int size);
 
 #ifdef __cplusplus

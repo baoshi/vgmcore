@@ -168,12 +168,11 @@ void vgm_destroy(vgm_t *vgm)
 }
 
 
-bool vgm_prepare_playback(vgm_t *vgm, unsigned int srate, bool fadeout)
+bool vgm_prepare_playback(vgm_t *vgm, unsigned int sample_rate, bool fadeout)
 {
-    vgm->apu = nesapu_create(vgm->reader, vgm->rate == 50 ? true : false, vgm->nes_apu_clk, srate);
+    vgm->apu = nesapu_create(vgm->reader, vgm->rate == 50 ? true : false, vgm->nes_apu_clk, sample_rate);
     if (NULL == vgm->apu)
         return false;
-    vgm->sample_rate = srate;
     vgm->data_pos = (size_t)vgm->data_offset;
     vgm->samples_waiting = 0;
     vgm->played_samples = 0;
@@ -181,7 +180,7 @@ bool vgm_prepare_playback(vgm_t *vgm, unsigned int srate, bool fadeout)
     if (fadeout)
     {
         unsigned long fades1 = vgm->complete_samples / 20;
-        unsigned long fades2 = VGM_FADEOUT_SECONDS * srate;
+        unsigned long fades2 = VGM_FADEOUT_SECONDS * sample_rate;
         vgm->fadeout_samples = (unsigned int)(fades1 > fades2 ? fades2 : fades1);
     }
     return true;
