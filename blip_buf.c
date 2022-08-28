@@ -1,8 +1,13 @@
 /* blip_buf 1.1.0. http://www.slack.net/~ant/ */
+/* Baoshi modification:
+ * malloc -> VGM_MALLOC
+ * free -> VGM_FREE
+ * assert -> VGM_ASSERT
+ * Macro defined in vgm_conf.h
+ */   
 
 #include "blip_buf.h"
 
-#include <assert.h>
 #include <limits.h>
 #include <string.h>
 #include <stdlib.h>
@@ -96,24 +101,24 @@ static void check_assumptions( void )
 		#error "int must be at least 32 bits"
 	#endif
 	
-	assert( (-3 >> 1) == -2 ); /* right shift must preserve sign */
+	VGM_ASSERT( (-3 >> 1) == -2 ); /* right shift must preserve sign */
 	
 	n = max_sample * 2;
 	CLAMP( n );
-	assert( n == max_sample );
+	VGM_ASSERT( n == max_sample );
 	
 	n = min_sample * 2;
 	CLAMP( n );
-	assert( n == min_sample );
+	VGM_ASSERT( n == min_sample );
 	
-	assert( blip_max_ratio <= time_unit );
-	assert( blip_max_frame <= (fixed_t) -1 >> time_bits );
+	VGM_ASSERT( blip_max_ratio <= time_unit );
+	VGM_ASSERT( blip_max_frame <= (fixed_t) -1 >> time_bits );
 }
 
 blip_t* blip_new( int size )
 {
 	blip_t* m;
-	assert( size >= 0 );
+	VGM_ASSERT( size >= 0 );
 	
 	m = (blip_t*) VGM_MALLOC( sizeof *m + (size + buf_extra) * sizeof (buf_t) );
 	if ( m )
@@ -142,7 +147,7 @@ void blip_set_rates( blip_t* m, double clock_rate, double sample_rate )
 	m->factor = (fixed_t) factor;
 	
 	/* Fails if clock_rate exceeds maximum, relative to sample_rate */
-	assert( 0 <= factor - m->factor && factor - m->factor < 1 );
+	VGM_ASSERT( 0 <= factor - m->factor && factor - m->factor < 1 );
 	
 	/* Avoid requiring math.h. Equivalent to
 	m->factor = (int) ceil( factor ) */
@@ -172,7 +177,7 @@ int blip_clocks_needed( const blip_t* m, int samples )
 	fixed_t needed;
 	
 	/* Fails if buffer can't hold that many more samples */
-	assert( samples >= 0 && m->avail + samples <= m->size );
+	VGM_ASSERT( samples >= 0 && m->avail + samples <= m->size );
 	
 	needed = (fixed_t) samples * time_unit;
 	if ( needed < m->offset )
@@ -188,7 +193,7 @@ void blip_end_frame( blip_t* m, unsigned t )
 	m->offset = off & (time_unit - 1);
 	
 	/* Fails if buffer size was exceeded */
-	assert( m->avail <= m->size );
+	VGM_ASSERT( m->avail <= m->size );
 }
 
 int blip_samples_avail( const blip_t* m )
@@ -208,7 +213,7 @@ static void remove_samples( blip_t* m, int count )
 
 int blip_read_samples( blip_t* m, short out [], int count, int stereo )
 {
-	assert( count >= 0 );
+	VGM_ASSERT( count >= 0 );
 	
 	if ( count > m->avail )
 		count = m->avail;
@@ -307,7 +312,7 @@ void blip_add_delta( blip_t* m, unsigned time, int delta )
 	delta -= delta2;
 	
 	/* Fails if buffer size was exceeded */
-	assert( out <= &SAMPLES( m ) [m->size + end_frame_extra] );
+	VGM_ASSERT( out <= &SAMPLES( m ) [m->size + end_frame_extra] );
 	
 	out [0] += in[0]*delta + in[half_width+0]*delta2;
 	out [1] += in[1]*delta + in[half_width+1]*delta2;
@@ -338,7 +343,7 @@ void blip_add_delta_fast( blip_t* m, unsigned time, int delta )
 	int delta2 = delta * interp;
 	
 	/* Fails if buffer size was exceeded */
-	assert( out <= &SAMPLES( m ) [m->size + end_frame_extra] );
+	VGM_ASSERT( out <= &SAMPLES( m ) [m->size + end_frame_extra] );
 	
 	out [7] += delta * delta_unit - delta2;
 	out [8] += delta2;
