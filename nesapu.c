@@ -1176,7 +1176,7 @@ uint8_t nesapu_read_ram(nesapu_t *apu, uint16_t addr)
     } while (0);
     if (!ram)
     {
-        VGM_PRINTDBG("APU: RAM read at 0x%04d not found\n", addr);
+        // Some bad VGM rips (Shadow of Ninja) will access invalid ram data, just return 0
         return 0;
     }
     // 2. Test if we need to refetch ram
