@@ -597,7 +597,7 @@ static inline unsigned int update_dmc(nesapu_t* apu, unsigned int cycles)
 {
     if (!apu->dmc_enabled) return 0;
     // Some bad VGM turn on DMC even it is not actually used, cause excessive waste of clocks here.
-    if (0 == apu->dmc_timer_period) return;
+    if (0 == apu->dmc_timer_period) return 0;
     // clock channel clock
     unsigned int clocks = timer_count_down(&(apu->dmc_timer_value), apu->dmc_timer_period + 1, cycles);
     while (clocks)
