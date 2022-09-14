@@ -105,12 +105,12 @@ typedef struct vgm_s
     uint32_t rate;          // (experimental: to find out 50/60Hz)
     uint32_t nes_apu_clk;   // NES APU clock
     char *track_name_en;    // track name in English
-	char *game_name_en;     // game name in English
-	char *sys_name_en;      // system name in English
-	char *author_name_en;   // author name in English
-	char *release_date;     // release date
-	char *creator;          // VGM creator name
-	char *notes;            // notes
+    char *game_name_en;     // game name in English
+    char *sys_name_en;      // system name in English
+    char *author_name_en;   // author name in English
+    char *release_date;     // release date
+    char *creator;          // VGM creator name
+    char *notes;            // notes
     // Playback control
     size_t data_pos;                // position of current data
     unsigned int samples_waiting;   // # of samples waiting, in 44100Hz unit
