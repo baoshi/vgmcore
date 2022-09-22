@@ -560,7 +560,7 @@ int vgm_get_samples(vgm_t *vgm, int16_t *buf, unsigned int size)
             vgm->played_samples += read;
             if (vgm->played_samples + vgm->fadeout_samples > vgm->complete_samples) // not very accurate but shall work
             {
-                nesapu_fade_enable(vgm->apu, vgm->fadeout_samples);
+                nesapu_enable_fade(vgm->apu, vgm->fadeout_samples);
             }
         }
         else
@@ -581,4 +581,10 @@ int vgm_get_samples(vgm_t *vgm, int16_t *buf, unsigned int size)
         }
     }
     return samples;
+}
+
+
+void vgm_nesapu_enable_channel(vgm_t *vgm, uint8_t mask, bool enable)
+{
+    nesapu_enable_channel(vgm->apu, mask, enable);
 }

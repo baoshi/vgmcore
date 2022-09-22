@@ -15,6 +15,14 @@ extern "C" {
 #define VGM_SAMPLE_RATE         44100   // Fixed sample rate for all VGM files
 #define VGM_FADEOUT_SECONDS     2
 
+#define VGM_NESAPU_CHANNEL_PULSE1   NESAPU_CHANNEL_PULSE1
+#define VGM_NESAPU_CHANNEL_PULSE2   NESAPU_CHANNEL_PULSE2
+#define VGM_NESAPU_CHANNEL_TRIANGLE NESAPU_CHANNEL_TRIANGLE
+#define VGM_NESAPU_CHANNEL_NOISE    NESAPU_CHANNEL_NOISE
+#define VGM_NESAPU_CHANNEL_DMC      NESAPU_CHANNEL_DMC
+#define VGM_NESAPU_CHANNEL_ALL      NESAPU_CHANNEL_ALL
+
+
 PACK(struct vgm_header_s
 {
     uint32_t ident;             // 0x00: identification "Vgm " 0x206d6756
@@ -105,12 +113,12 @@ typedef struct vgm_s
     uint32_t rate;          // (experimental: to find out 50/60Hz)
     uint32_t nes_apu_clk;   // NES APU clock
     char *track_name_en;    // track name in English
-    char *game_name_en;     // game name in English
-    char *sys_name_en;      // system name in English
-    char *author_name_en;   // author name in English
-    char *release_date;     // release date
-    char *creator;          // VGM creator name
-    char *notes;            // notes
+	char *game_name_en;     // game name in English
+	char *sys_name_en;      // system name in English
+	char *author_name_en;   // author name in English
+	char *release_date;     // release date
+	char *creator;          // VGM creator name
+	char *notes;            // notes
     // Playback control
     size_t data_pos;                // position of current data
     unsigned int samples_waiting;   // # of samples waiting, in 44100Hz unit
@@ -125,6 +133,8 @@ vgm_t* vgm_create(file_reader_t *reader);
 void vgm_destroy(vgm_t *vgm);
 bool vgm_prepare_playback(vgm_t *vgm, unsigned int sample_rate, bool fadeout);
 int vgm_get_samples(vgm_t *vgm, int16_t *buf, unsigned int size);
+void vgm_nesapu_enable_channel(vgm_t *vgm, uint8_t mask, bool enable);
+
 
 #ifdef __cplusplus
 }
