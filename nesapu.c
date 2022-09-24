@@ -1186,7 +1186,7 @@ uint8_t nesapu_read_ram(nesapu_t *apu, uint16_t addr)
     } while (0);
     if (!ram)
     {
-        VGM_PRINTDBG("APU: RAM read at 0x%04d not found\n", addr);
+        VGM_PRINTDBG("APU: RAM read at 0x%04x not found\n", addr);
         return 0;
     }
     // 2. Test if we need to refetch ram
