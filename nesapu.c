@@ -596,8 +596,6 @@ static void dmc_transfer(nesapu_t *apu)
 static inline unsigned int update_dmc(nesapu_t* apu, unsigned int cycles)
 {
     if (!apu->dmc_enabled) return 0;
-    // Some bad VGM turn on DMC even it is not actually used, cause excessive waste of clocks here.
-    if (0 == apu->dmc_timer_period) return 0;
     // clock channel clock
     unsigned int clocks = timer_count_down(&(apu->dmc_timer_value), apu->dmc_timer_period + 1, cycles);
     while (clocks)
@@ -646,7 +644,6 @@ static inline unsigned int update_dmc(nesapu_t* apu, unsigned int cycles)
     }
     return (apu->dmc_output);
 }
-
 
 
 nesapu_t * nesapu_create(file_reader_t *reader, bool format, unsigned int clock, unsigned int sample_rate)
@@ -711,6 +708,12 @@ void nesapu_reset(nesapu_t* apu)
     // samplling
     apu->sample_accu_fp = 0;
 #endif
+    // channel mask
+    apu->mask_pulse1 = false;
+    apu->mask_pulse2 = false;
+    apu->mask_triangle = false;
+    apu->mask_noise = false;
+    apu->mask_dmc = false;
     // fade control
     apu->fadeout_enabled = false;
     apu->fadeout_period_fp = 0;
@@ -818,6 +821,11 @@ static inline int16_t nesapu_run_and_sample(nesapu_t *apu, unsigned int cycles)
     unsigned int tr = update_triangle(apu, cycles);
     unsigned int ns = update_noise(apu, cycles);
     unsigned int dm = update_dmc(apu, cycles);
+    if (apu->mask_pulse1) p1 = 0;
+    if (apu->mask_pulse2) p2 = 0;
+    if (apu->mask_triangle) tr = 0;
+    if (apu->mask_noise) ns = 0;
+    if (apu->mask_dmc) dm = 0;
     q29_t f = mixer_pulse_table[p1 + p2] + mixer_tnd_table[3 * tr + 2 * ns + dm];
     if (apu->fadeout_enabled)
     {
@@ -1178,7 +1186,7 @@ uint8_t nesapu_read_ram(nesapu_t *apu, uint16_t addr)
     } while (0);
     if (!ram)
     {
-        // Some bad VGM rips (Shadow of Ninja) will access invalid ram data, just return 0
+        VGM_PRINTDBG("APU: RAM read at 0x%04x not found\n", addr);
         return 0;
     }
     // 2. Test if we need to refetch ram
@@ -1222,7 +1230,7 @@ uint8_t nesapu_read_ram(nesapu_t *apu, uint16_t addr)
 }
 
 
-void nesapu_fade_enable(nesapu_t *apu, unsigned int samples)
+void nesapu_enable_fade(nesapu_t *apu, unsigned int samples)
 {
     if (apu->fadeout_enabled) return;
     apu->fadeout_sequencer_value = NESAPU_FADE_STEPS - 1;
@@ -1230,4 +1238,14 @@ void nesapu_fade_enable(nesapu_t *apu, unsigned int samples)
     apu->fadeout_period_fp = float_to_q16((float)samples / NESAPU_FADE_STEPS);
     apu->fadeout_accu_fp = 0;
     apu->fadeout_enabled = true;
+}
+
+
+void nesapu_enable_channel(nesapu_t *apu, uint8_t mask, bool enable)
+{
+    if (mask & NESAPU_CHANNEL_PULSE1) apu->mask_pulse1 = !enable;
+    if (mask & NESAPU_CHANNEL_PULSE2) apu->mask_pulse2 = !enable;
+    if (mask & NESAPU_CHANNEL_TRIANGLE) apu->mask_triangle = !enable;
+    if (mask & NESAPU_CHANNEL_NOISE) apu->mask_noise = !enable;
+    if (mask & NESAPU_CHANNEL_DMC) apu->mask_dmc = !enable;
 }

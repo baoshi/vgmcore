@@ -30,6 +30,14 @@ extern "C" {
 # define NESAPU_RAM_CACHE_SIZE   4096
 #endif
 
+// Channel masks ---D NT21
+#define NESAPU_CHANNEL_PULSE1      0x01
+#define NESAPU_CHANNEL_PULSE2      0x02
+#define NESAPU_CHANNEL_TRIANGLE    0x04
+#define NESAPU_CHANNEL_NOISE       0x08
+#define NESAPU_CHANNEL_DMC         0x10
+#define NESAPU_CHANNEL_NONE        0x00
+#define NESAPU_CHANNEL_ALL         0x1f
 
 typedef struct nesapu_ram_s nesapu_ram_t;
 struct nesapu_ram_s
@@ -132,6 +140,12 @@ typedef struct nesapu_s
     nesapu_ram_t  *ram_list;                    // APU accessible RAM list
     uint8_t       *ram_cache;                   // Read cache for RAM, shared by all RAM blocks
     nesapu_ram_t  *ram_active;                  // Active ram block (using cache)
+    // Channel masks
+    bool          mask_pulse1;
+    bool          mask_pulse2;
+    bool          mask_triangle;
+    bool          mask_noise;
+    bool          mask_dmc;
     // Fade control
     bool          fadeout_enabled;
     q16_t         fadeout_period_fp;
@@ -147,7 +161,9 @@ void    nesapu_write_reg(nesapu_t *apu, uint16_t reg, uint8_t val);
 void    nesapu_get_samples(nesapu_t *apu, int16_t *buf, unsigned int samples);
 void    nesapu_add_ram(nesapu_t *apu, size_t offset, uint16_t addr, uint16_t len);
 uint8_t nesapu_read_ram(nesapu_t *apu, uint16_t addr);
-void    nesapu_fade_enable(nesapu_t *apu, unsigned int samples);
+void    nesapu_enable_fade(nesapu_t *apu, unsigned int samples);
+void    nesapu_enable_channel(nesapu_t *apu, uint8_t mask, bool enable);
+
 
 #ifdef __cplusplus
 }
