@@ -206,8 +206,9 @@ static int vgm_exec(vgm_t *vgm)
     {
         if (reader->read(reader, &data8, vgm->data_pos, 1) != 1)
         {
-            stop = true;
+            VGM_PRINTERR("VGM: Read error\n");
             r = -1;
+            stop = true;
         }
         else
         {
@@ -279,6 +280,7 @@ static int vgm_exec(vgm_t *vgm)
             case 0x61:  // nn nn : Wait n samples, n can range from 0 to 65535 (approx 1.49s)
                 if (reader->read(reader, (uint8_t *)&data16, vgm->data_pos + 1, 2) != 2)
                 {
+                    VGM_PRINTERR("VGM: Read error\n");
                     r = -1;
                     stop = true;
                 }
@@ -329,6 +331,7 @@ static int vgm_exec(vgm_t *vgm)
                 if (data32 == 0)
                 {
                     // bad thing happend in VGM file
+                    VGM_PRINTERR("VGM: Read error\n");
                     r = -1;
                     stop = true;   
                 }
@@ -424,12 +427,14 @@ static int vgm_exec(vgm_t *vgm)
             case 0xB4:  // aa dd : NES APU, write value dd to register aa
                 if (reader->read(reader, &aa, vgm->data_pos + 1, 1) != 1)
                 {
+                    VGM_PRINTERR("VGM: Read error\n");
                     r = -1;
                     stop = true;
                     break;
                 }
                 if (reader->read(reader, &dd, vgm->data_pos + 2, 1) != 1)
                 {
+                    VGM_PRINTERR("VGM: Read error\n");
                     r = -1;
                     stop = true;
                     break;
@@ -560,7 +565,7 @@ int vgm_get_samples(vgm_t *vgm, int16_t *buf, unsigned int size)
             vgm->played_samples += read;
             if (vgm->played_samples + vgm->fadeout_samples > vgm->complete_samples) // not very accurate but shall work
             {
-                nesapu_fade_enable(vgm->apu, vgm->fadeout_samples);
+                nesapu_enable_fade(vgm->apu, vgm->fadeout_samples);
             }
         }
         else
@@ -581,4 +586,10 @@ int vgm_get_samples(vgm_t *vgm, int16_t *buf, unsigned int size)
         }
     }
     return samples;
+}
+
+
+void vgm_nesapu_enable_channel(vgm_t *vgm, uint8_t mask, bool enable)
+{
+    nesapu_enable_channel(vgm->apu, mask, enable);
 }
