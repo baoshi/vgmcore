@@ -1,4 +1,4 @@
-# VGM decoder library core
+# VGM decoder core
 
 Decode VGM audio.
 
